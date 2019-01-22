@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+pyyaml = "*"
+flask = "*"
+watchdog = "*"
+bitbucket-python = {file = "https://github.com/GearPlug/bitbucket-python/archive/master.zip"}
+unidiff = "*"
+flask-script = "*"
+python-dateutil = "*"
+pygithub = "*"
+
+[requires]
+python_version = "3.7"
