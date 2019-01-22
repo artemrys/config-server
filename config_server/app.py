@@ -41,10 +41,12 @@ app.config["configs"] = {}
 def load_all_configs():
     tree = repo.get_git_tree("master").tree
     for element in tree:
-        app.logger.info(f"Adding {element.path} to configs")
-        download_url = repo.get_file_contents(element.path).download_url
+        path = element.path
+        config_path = path.split(".")[0]
+        app.logger.info(f"Adding {config_path} to configs")
+        download_url = repo.get_file_contents(path).download_url
         content = download_parsed_yaml_file_content(download_url)
-        app.config["configs"][element.path] = content
+        app.config["configs"][config_path] = content
     app.logger.info(f"Initial configuration: {app.config['configs']}")
 
 
@@ -63,20 +65,23 @@ def config_change_hook():
     for commit in commits:
         added = commit["added"]
         for path in added:
-            app.logger.info(f"Added {path} configuration")
+            config_path = path.split(".")[0]
+            app.logger.info(f"Added {config_path} configuration")
             download_url = repo.get_file_contents(path, ref=commit["id"]).download_url
             content = download_parsed_yaml_file_content(download_url)
-            app.config["configs"][path] = content
+            app.config["configs"][config_path] = content
         removed = commit["removed"]
         for path in removed:
-            app.logger.info(f"Removed {path} configuration")
-            del app.config["configs"][path]
+            config_path = path.split(".")[0]
+            app.logger.info(f"Removed {config_path} configuration")
+            del app.config["configs"][config_path]
         modified = commit["modified"]
         for path in modified:
-            app.logger.info(f"Modified {path} configuration")
+            config_path = path.split(".")[0]
+            app.logger.info(f"Modified {config_path} configuration")
             download_url = repo.get_file_contents(path, ref=commit["id"]).download_url
             content = download_parsed_yaml_file_content(download_url)
-            app.config["configs"][path] = content
+            app.config["configs"][config_path] = content
     app.logger.info(f"After push configuration: {app.config['configs']}")
     return jsonify()
 
