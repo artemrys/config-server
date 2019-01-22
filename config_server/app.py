@@ -14,12 +14,12 @@ from config_server.utils import download_parsed_yaml_file_content
 GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
 if GITHUB_ACCESS_TOKEN is None:
     sys.exit(1)
-CONFIG_REPO = os.getenv("CONFIG_REPO")
-if CONFIG_REPO is None:
+GITHUB_CONFIG_REPO = os.getenv("GITHUB_CONFIG_REPO")
+if GITHUB_CONFIG_REPO is None:
     sys.exit(1)
 
 g = Github(GITHUB_ACCESS_TOKEN)
-repo = g.get_user().get_repo(CONFIG_REPO)
+repo = g.get_user().get_repo(GITHUB_CONFIG_REPO)
 
 
 class FlaskConfigServer(Server):
