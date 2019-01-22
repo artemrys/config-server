@@ -8,6 +8,8 @@ from flask import jsonify, request
 from flask_script import Manager, Server
 from github import Github
 
+from config_server.config import Config
+from config_server.constants import BASE_CONFIGURATION_PATH
 from config_server.logging_config import logging_config
 from config_server.utils import download_parsed_yaml_file_content
 
@@ -35,7 +37,7 @@ manager = Manager(app)
 
 manager.add_command("runserver", FlaskConfigServer())
 
-app.config["configs"] = {}
+app.config["config"] = Config()
 
 
 def load_all_configs():
@@ -46,14 +48,19 @@ def load_all_configs():
         app.logger.info(f"Adding {config_path} to configs")
         download_url = repo.get_file_contents(path).download_url
         content = download_parsed_yaml_file_content(download_url)
-        app.config["configs"][config_path] = content
-    app.logger.info(f"Initial configuration: {app.config['configs']}")
+        if element.path == BASE_CONFIGURATION_PATH:
+            app.config["config"].update_base(content)
+        else:
+            app.config["config"][config_path] = content
+    app.logger.info(f"Initial configuration: {app.config['config']}")
 
 
 @app.route("/<config_name>")
 def config_route(config_name):
-    config_data = app.config["configs"].get(config_name)
-    if config_data is None:
+    # TODO: think about favicon.ico
+    try:
+        config_data = app.config["config"][config_name]
+    except KeyError:
         return jsonify({"message": "No such config on server"}), 404
     return jsonify(config_data)
 
@@ -69,20 +76,20 @@ def config_change_hook():
             app.logger.info(f"Added {config_path} configuration")
             download_url = repo.get_file_contents(path, ref=commit["id"]).download_url
             content = download_parsed_yaml_file_content(download_url)
-            app.config["configs"][config_path] = content
+            app.config["config"][config_path] = content
         removed = commit["removed"]
         for path in removed:
             config_path = path.split(".")[0]
             app.logger.info(f"Removed {config_path} configuration")
-            del app.config["configs"][config_path]
+            app.config["config"].delete(config_path)
         modified = commit["modified"]
         for path in modified:
             config_path = path.split(".")[0]
             app.logger.info(f"Modified {config_path} configuration")
             download_url = repo.get_file_contents(path, ref=commit["id"]).download_url
             content = download_parsed_yaml_file_content(download_url)
-            app.config["configs"][config_path] = content
-    app.logger.info(f"After push configuration: {app.config['configs']}")
+            app.config["config"][config_path] = content
+    app.logger.info(f"After push configuration: {app.config['config']}")
     return jsonify()
 
 
