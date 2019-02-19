@@ -8,8 +8,6 @@ verify_ssl = true
 [packages]
 pyyaml = "*"
 flask = "*"
-watchdog = "*"
-bitbucket-python = {file = "https://github.com/GearPlug/bitbucket-python/archive/master.zip"}
 unidiff = "*"
 flask-script = "*"
 python-dateutil = "*"
